@@ -52,7 +52,7 @@ def read_glider_data_thredds_server(url_glider,var,scatter_plot,**kwargs):
     
     inst_id = gdata.id.split('_')[0]
 
-    variable =gdata.variables[var][0]
+    variable =gdata.variables[var][0][:]
     latitude = gdata.latitude[0]
     longitude = gdata.longitude[0]
     depth = gdata.depth[0]

@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 
-def grid_glider_data(df,var,delta_z=0.3,contour_plot='yes'):
+def grid_glider_data_erddap(df,var,delta_z=0.3,contour_plot='yes'):
  
     """
     Created on Wed Feb  6 11:49:24 2019
@@ -14,7 +14,7 @@ def grid_glider_data(df,var,delta_z=0.3,contour_plot='yes'):
     Inputs:
     df: data frame that contains glider data. It should contain at least 
         time, latitude, longitude and a variable such as temperature or
-        salinity
+        salinity. df is obtained running "read_glider_data_erddap_server"
     var: variable to be gridded. example: 'temperature', 'salinity'
     delta_z: desired spacing in meters of the vertical levels of output 
              variable var_gridded. example, delta_z=0.5. Default value is 0.3
@@ -95,4 +95,82 @@ def grid_glider_data(df,var,delta_z=0.3,contour_plot='yes'):
         #cbar.ax.set_ylabel('Temperature ($^\circ$C)')
         ax.set_ylabel('Depth (m)'); 
 
-    return depthg_gridded, varg_gridded, timeg, latg, long          
+    return depthg_gridded, varg_gridded, timeg, latg, long   
+
+#%%
+    
+def grid_glider_data_thredd(timeg,latg,long,depthg,varg,var,inst_id,delta_z=0.3,contour_plot='yes'):
+ 
+    """
+    Created on Wed Feb 25 2019
+
+    @author: aristizabal
+    
+    This function grids glider data so it can be plotted as a countour plot.
+    
+    Inputs:
+    timeg: time vector
+    latg: latitude within the user defined time window. length is the same as
+          timeg
+    long: longitude within the user defined time window. length is the same as
+          timeg
+    depthg: depth array for all profiles. It must be a 2D array with
+          Dimensions timeg x depth
+    varg: variable to be gridded. example: 'temperature', 'salinity'
+          it must be a 2D array with dimension timeg x depth 
+    var: name of variable to be gridded
+    delta_z: desired spacing in meters of the vertical levels of output 
+             variable var_gridded. example, delta_z=0.5. Default value is 0.3
+    contour_plot: if equal to 'yes' then a contour plot 
+            of the glider transect is plotted. Default value is 'yes'
+    
+                    
+    Outputs:
+    depthg_gridded: gridded depth vector
+    varg_gridded: gridded variable matrix
+    
+    """
+    
+    import numpy as np
+    import matplotlib.pyplot as plt
+    import matplotlib.dates as mdates
+    
+    # Grid variables
+    depthg_gridded = np.arange(0,np.nanmax(depthg),delta_z)
+    varg_gridded = np.empty((len(timeg),len(depthg_gridded)))
+    varg_gridded[:] = np.nan
+
+    for t,tt in enumerate(timeg):
+        depthu,oku = np.unique(depthg[t,:],return_index=True)
+        varu = varg[t,oku]
+        okdd = np.isfinite(depthu)
+        depthf = depthu[okdd]
+        varf = varu[okdd]
+        ok = np.asarray(np.isfinite(varf))
+        if np.sum(ok) < 3:
+            varg_gridded[t,:] = np.nan
+        else:
+            okd = depthg_gridded < np.max(depthf[ok])
+            varg_gridded[t,okd] = np.interp(depthg_gridded[okd],depthf[ok],varf[ok])   
+                      
+    # Countour plot
+    if contour_plot == 'yes': 
+    
+        fig, ax=plt.subplots(figsize=(10, 6), facecolor='w', edgecolor='w')
+        
+        nlevels = np.round(np.nanmax(varg_gridded)) - np.round(np.nanmin(varg_gridded)) + 1
+        kw = dict(levels = np.linspace(np.round(np.nanmin(varg_gridded)),\
+                                       np.round(np.nanmax(varg_gridded)),nlevels))
+        plt.contour(timeg,-depthg_gridded,varg_gridded.T,levels=26,colors = 'k')
+        cs = plt.contourf(timeg,-depthg_gridded,varg_gridded.T,cmap='RdYlBu_r',**kw)
+        plt.title(inst_id.split('-')[0],fontsize=20)
+        
+        ax.set_xlim(timeg[0], timeg[-1])
+        xfmt = mdates.DateFormatter('%H:%Mh\n%d-%b')
+        ax.xaxis.set_major_formatter(xfmt)
+        
+        cbar = fig.colorbar(cs, orientation='vertical') 
+        cbar.ax.set_ylabel(var)
+        ax.set_ylabel('Depth (m)'); 
+
+    return depthg_gridded, varg_gridded  
