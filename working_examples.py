@@ -108,7 +108,7 @@ from read_glider_data import read_glider_data_thredds_server
 from process_glider_data import grid_glider_data_thredd
 
 url_glider = 'https://data.ioos.us/thredds/dodsC/deployments/rutgers/ru33-20180801T1323/ru33-20180801T1323.nc3.nc'
-var = 'temperature'
+var_name = 'temperature'
 date_ini = '2018/09/01/00' # year/month/day/hour
 date_end = '2018/09/10/00' # year/month/day/hour
 scatter_plot = 'yes'
@@ -119,5 +119,5 @@ varg, latg, long, depthg, timeg, inst_id = \
     
 contour_plot='yes'    
 depthg_gridded, varg_gridded = \
-                    grid_glider_data_thredd(timeg,latg,long,depthg,varg,var,inst_id)
+                    grid_glider_data_thredd(timeg,latg,long,depthg,varg,var_name,inst_id)
                     

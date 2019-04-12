@@ -128,6 +128,7 @@ def grid_glider_data_thredd(timeg,latg,long,depthg,varg,var,inst_id,delta_z=0.3,
     Outputs:
     depthg_gridded: gridded depth vector
     varg_gridded: gridded variable matrix
+    timegg: sorted time vector
     
     """
     
@@ -135,14 +136,23 @@ def grid_glider_data_thredd(timeg,latg,long,depthg,varg,var,inst_id,delta_z=0.3,
     import matplotlib.pyplot as plt
     import matplotlib.dates as mdates
     
+    # sort time variable
+    okt = np.argsort(timeg)
+    timegg = timeg[okt]
+    latgg = latg[okt]
+    longg = long[okt]
+    depthgg = depthg[okt,:]
+    vargg = varg[okt,:]
+    
     # Grid variables
-    depthg_gridded = np.arange(0,np.nanmax(depthg),delta_z)
-    varg_gridded = np.empty((len(timeg),len(depthg_gridded)))
+    depthg_gridded = np.arange(0,np.nanmax(depthgg),delta_z)
+    varg_gridded = np.empty((len(timegg),len(depthg_gridded)))
     varg_gridded[:] = np.nan
 
-    for t,tt in enumerate(timeg):
-        depthu,oku = np.unique(depthg[t,:],return_index=True)
-        varu = varg[t,oku]
+    for t,tt in enumerate(timegg):
+        print(t)
+        depthu,oku = np.unique(depthgg[t,:],return_index=True)
+        varu = vargg[t,oku]
         okdd = np.isfinite(depthu)
         depthf = depthu[okdd]
         varf = varu[okdd]
@@ -161,8 +171,8 @@ def grid_glider_data_thredd(timeg,latg,long,depthg,varg,var,inst_id,delta_z=0.3,
         nlevels = np.round(np.nanmax(varg_gridded)) - np.round(np.nanmin(varg_gridded)) + 1
         kw = dict(levels = np.linspace(np.round(np.nanmin(varg_gridded)),\
                                        np.round(np.nanmax(varg_gridded)),nlevels))
-        plt.contour(timeg,-depthg_gridded,varg_gridded.T,levels=26,colors = 'k')
-        cs = plt.contourf(timeg,-depthg_gridded,varg_gridded.T,cmap='RdYlBu_r',**kw)
+        #plt.contour(timegg,-depthg_gridded,varg_gridded.T,levels=26,colors = 'k')
+        cs = plt.contourf(timegg,-depthg_gridded,varg_gridded.T,cmap='RdYlBu_r',**kw)
         plt.title(inst_id.split('-')[0],fontsize=20)
         
         ax.set_xlim(timeg[0], timeg[-1])
@@ -170,7 +180,7 @@ def grid_glider_data_thredd(timeg,latg,long,depthg,varg,var,inst_id,delta_z=0.3,
         ax.xaxis.set_major_formatter(xfmt)
         
         cbar = fig.colorbar(cs, orientation='vertical') 
-        cbar.ax.set_ylabel(var)
-        ax.set_ylabel('Depth (m)'); 
+        cbar.ax.set_ylabel(var,fontsize=16)
+        ax.set_ylabel('Depth (m)',fontsize=16); 
 
-    return depthg_gridded, varg_gridded  
+    return depthg_gridded, varg_gridded, timegg  
