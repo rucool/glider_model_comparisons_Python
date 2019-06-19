@@ -56,7 +56,7 @@ def glider_transect_model_com_erddap_server(url_glider,dataset_id,url_model,lat_
     import matplotlib.dates as mdates
 
     from read_glider_data import read_glider_data_erddap_server
-    from process_glider_data import grid_glider_data
+    from process_glider_data import grid_glider_data_erddap
 
     # Read GOFS 3.1 output
     print('Retrieving coordinates from model')
@@ -81,7 +81,8 @@ def glider_transect_model_com_erddap_server(url_glider,dataset_id,url_model,lat_
                                         lat_lim,lon_lim,date_ini,date_end,\
                                         scatter_plot='no')
 
-    depthg_gridded, varg_gridded, timeg, latg, long = grid_glider_data(df,var_glider,contour_plot='no')
+    depthg_gridded, varg_gridded, timeg, latg, long = \
+                       grid_glider_data_erddap(df,var_glider,contour_plot='no')
 
     # Conversion from glider longitude and latitude to GOFS convention
     target_lon = np.empty((len(long),))
@@ -106,8 +107,7 @@ def glider_transect_model_com_erddap_server(url_glider,dataset_id,url_model,lat_
     oklatm=np.round(np.interp(sublatm,latm,np.arange(len(latm)))).astype(int)
     
     # Getting glider transect from model
-    print('Getting glider transect from model. If it breaks is because \
-          GOFS 3.1 server is not responding')
+    print('Getting glider transect from model. If it breaks is because GOFS 3.1 server is not responding')
     target_varm = np.empty((len(depthm),len(oktimem[0])))
     target_varm[:] = np.nan
     for i in range(len(oktimem[0])):
@@ -128,7 +128,7 @@ def glider_transect_model_com_erddap_server(url_glider,dataset_id,url_model,lat_
     kw = dict(levels = np.linspace(min_val,max_val,nlevels))
     #plt.contour(timeg,-depthg_gridded,varg_gridded,colors = 'lightgrey',**kw)
     cs = plt.contourf(timeg,-depthg_gridded,varg_gridded,cmap='RdYlBu_r',**kw)
-    plt.contour(timeg,-depthg_gridded,varg_gridded,levels=26,colors='k')
+    plt.contour(timeg,-depthg_gridded,varg_gridded,[26],colors='k')
 
     cs = fig.colorbar(cs, orientation='vertical') 
     cs.ax.set_ylabel(var_glider[0].upper()+var_glider[1:],fontsize=14,labelpad=15)

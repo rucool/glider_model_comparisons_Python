@@ -27,7 +27,6 @@ def grid_glider_data_erddap(df,var,delta_z=0.3,contour_plot='yes'):
     varg_gridded: gridded variable matrix
     timeg: time vector
     """
-
     
     import numpy as np
     import matplotlib.pyplot as plt
@@ -35,11 +34,11 @@ def grid_glider_data_erddap(df,var,delta_z=0.3,contour_plot='yes'):
     
     # Coverting glider vectors into arrays
     timeg, ind = np.unique(df.index.values,return_index=True)
-    latg = np.unique(df.latitude.values)
-    long = np.unique(df.longitude.values)
+    latg = np.unique(df['latitude (degrees_north)'].values)
+    long = np.unique(df['longitude (degrees_east)'].values)
 
-    dg = df.depth.values
-    vg = df[var].values
+    dg = df['depth (m)'].values
+    vg = df[df.columns[3]].values
 
     zn = np.int(np.round(np.max(dg)/delta_z))
 
@@ -139,8 +138,8 @@ def grid_glider_data_thredd(timeg,latg,long,depthg,varg,var,inst_id,delta_z=0.3,
     # sort time variable
     okt = np.argsort(timeg)
     timegg = timeg[okt]
-    latgg = latg[okt]
-    longg = long[okt]
+    #latgg = latg[okt]
+    #longg = long[okt]
     depthgg = depthg[okt,:]
     vargg = varg[okt,:]
     
@@ -150,7 +149,6 @@ def grid_glider_data_thredd(timeg,latg,long,depthg,varg,var,inst_id,delta_z=0.3,
     varg_gridded[:] = np.nan
 
     for t,tt in enumerate(timegg):
-        print(t)
         depthu,oku = np.unique(depthgg[t,:],return_index=True)
         varu = vargg[t,oku]
         okdd = np.isfinite(depthu)

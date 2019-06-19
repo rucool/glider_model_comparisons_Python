@@ -227,9 +227,9 @@ def read_glider_data_erddap_server(url_server,dataset_id,var,\
     e.constraints = constraints
     e.variables = variables
     
-    # Concerting glider data to data frame
+    # Converting glider data to data frame
     df = e.to_pandas(
-            index_col='time',
+            index_col='time (UTC)',
             parse_dates=True,
             skiprows=(1,)  # units information can be dropped.
             ).dropna()
@@ -239,8 +239,8 @@ def read_glider_data_erddap_server(url_server,dataset_id,var,\
 
         fig, ax=plt.subplots(figsize=(10, 6), facecolor='w', edgecolor='w')
 
-        kw = dict(s=30, c=df[var], marker='*', edgecolor='none')
-        cs = ax.scatter(df.index, -df['depth'], **kw, cmap='RdYlBu_r')
+        kw = dict(s=30, c=df[df.columns[3]].values, marker='*', edgecolor='none')
+        cs = ax.scatter(df.index, -df['depth (m)'], **kw, cmap='RdYlBu_r')
         
         ax.set_xlim(df.index[0], df.index[-1])
         xfmt = mdates.DateFormatter('%H:%Mh\n%d-%b')
