@@ -121,8 +121,8 @@ gliders = retrieve_glider_id_erddap_server(url_glider,lat_lim,lon_lim,date_ini,d
 for glid in gliders:
     dataset_id = glid
     print(glid)
-    glider_transect_model_com_erddap_server(url_glider,dataset_id,url_model,lat_lim,lon_lim,\
+    timeg,depthg_gridded,varg_gridded,timem,depthm,target_varm = \
+    glider_transect_model_com_erddap_server(url_glider,dataset_id,url_model,\
+                              lat_lim,lon_lim,\
                               date_ini,date_end,var_glider,var_model,model_name)
-
-
-                    
+                        

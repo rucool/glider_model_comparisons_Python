@@ -127,7 +127,7 @@ def glider_transect_model_com_erddap_server(url_glider,dataset_id,url_model,lat_
             color_map = 'RdBu_r'
         
     okg = depthg_gridded <= np.max(depthg_gridded) 
-    okm = target_varm <= np.max(depthg_gridded) 
+    okm = depthm <= np.max(depthg_gridded) 
     min_val = np.round(np.min([np.nanmin(varg_gridded[okg]),np.nanmin(target_varm[okm])]))
     max_val = np.round(np.max([np.nanmax(varg_gridded[okg]),np.nanmax(target_varm[okm])]))
     
@@ -160,7 +160,7 @@ def glider_transect_model_com_erddap_server(url_glider,dataset_id,url_model,lat_
     ax = plt.subplot(212)        
     #plt.contour(timeg,-depthg_gridded,varg_gridded,colors = 'lightgrey',**kw)
     cs = plt.contourf(timem,-depthm,target_varm,cmap=color_map,**kw)
-
+    plt.contour(timem,-depthm,target_varm,[26],colors='k')
     cs = fig.colorbar(cs, orientation='vertical') 
     cs.ax.set_ylabel(var_glider[0].upper()+var_glider[1:],fontsize=14,labelpad=15)
 
