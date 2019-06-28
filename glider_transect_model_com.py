@@ -54,6 +54,7 @@ def glider_transect_model_com_erddap_server(url_glider,dataset_id,url_model,lat_
     import datetime
     import matplotlib.pyplot as plt
     import matplotlib.dates as mdates
+    import cmocean
 
     from read_glider_data import read_glider_data_erddap_server
     from process_glider_data import grid_glider_data_erddap
@@ -117,23 +118,39 @@ def glider_transect_model_com_erddap_server(url_glider,dataset_id,url_model,lat_
     target_varm[target_varm < -100] = np.nan
 
     # plot
-    min_val = np.round(np.min([np.nanmin(varg_gridded),np.nanmin(target_varm)]))
-    max_val = np.round(np.max([np.nanmax(varg_gridded),np.nanmax(target_varm)]))
+    if var_glider == 'temperature':
+        color_map = cmocean.cm.thermal
+    else:
+        if var_glider == 'salinity':
+            color_map = cmocean.cm.haline
+        else:
+            color_map = 'RdBu_r'
+        
+    okg = depthg_gridded <= np.max(depthg_gridded) 
+    okm = target_varm <= np.max(depthg_gridded) 
+    min_val = np.round(np.min([np.nanmin(varg_gridded[okg]),np.nanmin(target_varm[okm])]))
+    max_val = np.round(np.max([np.nanmax(varg_gridded[okg]),np.nanmax(target_varm[okm])]))
+    
+    if var_glider == 'salinity':
+        kw = dict(levels = np.arange(min_val,max_val,0.25))
+    else:
+        nlevels = max_val - min_val + 1
+        kw = dict(levels = np.linspace(min_val,max_val,nlevels))
+    
 
     # plot
     fig, ax = plt.subplots(figsize=(12, 6))
 
     ax = plt.subplot(211)        
-    nlevels = max_val - min_val + 1
-    kw = dict(levels = np.linspace(min_val,max_val,nlevels))
     #plt.contour(timeg,-depthg_gridded,varg_gridded,colors = 'lightgrey',**kw)
-    cs = plt.contourf(timeg,-depthg_gridded,varg_gridded,cmap='RdYlBu_r',**kw)
+    cs = plt.contourf(timeg,-depthg_gridded,varg_gridded,cmap=color_map,**kw)
     plt.contour(timeg,-depthg_gridded,varg_gridded,[26],colors='k')
 
     cs = fig.colorbar(cs, orientation='vertical') 
     cs.ax.set_ylabel(var_glider[0].upper()+var_glider[1:],fontsize=14,labelpad=15)
         
     ax.set_xlim(df.index[0], df.index[-1])
+    ax.set_ylim(-np.max(depthg_gridded), 0)
     ax.set_ylabel('Depth (m)',fontsize=14)
     ax.set_xticklabels(' ')
     
@@ -142,7 +159,7 @@ def glider_transect_model_com_erddap_server(url_glider,dataset_id,url_model,lat_
     
     ax = plt.subplot(212)        
     #plt.contour(timeg,-depthg_gridded,varg_gridded,colors = 'lightgrey',**kw)
-    cs = plt.contourf(timem,-depthm,target_varm,cmap='RdYlBu_r',**kw)
+    cs = plt.contourf(timem,-depthm,target_varm,cmap=color_map,**kw)
 
     cs = fig.colorbar(cs, orientation='vertical') 
     cs.ax.set_ylabel(var_glider[0].upper()+var_glider[1:],fontsize=14,labelpad=15)
