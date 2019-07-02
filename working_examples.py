@@ -105,9 +105,12 @@ url_model = 'http://tds.hycom.org/thredds/dodsC/GLBv0.08/expt_93.0/ts3z'
 lon_lim = [-75.0,-72.0]
 lat_lim = [38.0,40.0]
 
+#lon_lim = [-74.0,-71.0]
+#lat_lim = [37.0,41.0]
+
 # date limits
 date_ini = '2018-09-01T00:00:00Z'
-date_end = '2018-09-05T00:00:00Z'
+date_end = '2018-09-10T00:00:00Z'
 
 # glider variable to retrieve
 var_glider = 'temperature'

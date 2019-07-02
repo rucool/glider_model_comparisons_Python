@@ -128,8 +128,8 @@ def glider_transect_model_com_erddap_server(url_glider,dataset_id,url_model,lat_
         
     okg = depthg_gridded <= np.max(depthg_gridded) 
     okm = depthm <= np.max(depthg_gridded) 
-    min_val = np.ceil(np.min([np.nanmin(varg_gridded[okg]),np.nanmin(target_varm[okm])]))
-    max_val = np.floor(np.max([np.nanmax(varg_gridded[okg]),np.nanmax(target_varm[okm])]))
+    min_val = np.floor(np.min([np.nanmin(varg_gridded[okg]),np.nanmin(target_varm[okm])]))
+    max_val = np.ceil(np.max([np.nanmax(varg_gridded[okg]),np.nanmax(target_varm[okm])]))
     
     if var_glider == 'salinity':
         kw = dict(levels = np.arange(min_val,max_val,0.25))
