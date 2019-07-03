@@ -132,7 +132,7 @@ def glider_transect_model_com_erddap_server(url_glider,dataset_id,url_model,lat_
     max_val = np.ceil(np.max([np.nanmax(varg_gridded[okg]),np.nanmax(target_varm[okm])]))
     
     if var_glider == 'salinity':
-        kw = dict(levels = np.arange(min_val,max_val,0.25))
+        kw = dict(levels = np.arange(min_val,max_val+0.25,0.25))
     else:
         nlevels = max_val - min_val + 1
         kw = dict(levels = np.linspace(min_val,max_val,nlevels))
@@ -158,7 +158,7 @@ def glider_transect_model_com_erddap_server(url_glider,dataset_id,url_model,lat_
     plt.title('Along Track ' + var_glider[0].upper() + var_glider[1:] + ' Profile ' + dataset_id.split('-')[0])
     
     ax = plt.subplot(212)        
-    #plt.contour(timeg,-depthg_gridded,varg_gridded,colors = 'lightgrey',**kw)
+    plt.contour(mdates.date2num(timem),-depthm,target_varm,colors = 'lightgrey',**kw)
     cs = plt.contourf(mdates.date2num(timem),-depthm,target_varm,cmap=color_map,**kw)
     plt.contour(mdates.date2num(timem),-depthm,target_varm,[26],colors='k')
     cs = fig.colorbar(cs, orientation='vertical') 
