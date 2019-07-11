@@ -70,7 +70,8 @@ def grid_glider_data_erddap(df,var,delta_z=0.3,contour_plot='yes'):
         if np.sum(ok) < 3:
             varg_gridded[:,t] = np.nan
         else:
-            okd = depthg_gridded < np.max(depthf[ok])
+            okd = np.logical_and(depthg_gridded >= np.min(depthf[ok]),\
+                                 depthg_gridded < np.max(depthf[ok]))
             varg_gridded[okd,t] = np.interp(depthg_gridded[okd],depthf[ok],varf[ok])
 
 
