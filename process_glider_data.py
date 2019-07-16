@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 
-def grid_glider_data_erddap(df,var,delta_z=0.3,contour_plot='yes'):
+def grid_glider_data_erddap(df,var,delta_z=0.2,contour_plot='yes'):
 
     """
     Created on Wed Feb  6 11:49:24 2019
@@ -17,7 +17,7 @@ def grid_glider_data_erddap(df,var,delta_z=0.3,contour_plot='yes'):
         salinity. df is obtained running "read_glider_data_erddap_server"
     var: variable to be gridded. example: 'temperature', 'salinity'
     delta_z: desired spacing in meters of the vertical levels of output
-             variable var_gridded. example, delta_z=0.5. Default value is 0.3
+             variable var_gridded. example, delta_z=0.5. Default value is 0.2
     contour_plot: if equal to 'yes' then a contour plot
             of the glider transect is plotted. Default value is 'yes'
 

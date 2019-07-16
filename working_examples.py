@@ -71,7 +71,7 @@ delta_z = 0.3
 
 depthg_gridded, tempg_gridded, timeg, latg, long = \
                           grid_glider_data_erddap(df,var,delta_z,contour_plot)
-                          
+                                                   
 #%% read_glider_data_thredds_server
 # grid_glider_data_thredd                        
     
@@ -114,6 +114,7 @@ date_end = '2018-09-10T00:00:00Z'
 
 # glider variable to retrieve
 var_glider = 'temperature'
+delta_z = 0.2
 
 # model variable name
 model_name = 'GOFS 3.1'
@@ -127,5 +128,5 @@ for glid in gliders:
     timeg,depthg_gridded,varg_gridded,timem,depthm,target_varm = \
     glider_transect_model_com_erddap_server(url_glider,dataset_id,url_model,\
                               lat_lim,lon_lim,\
-                              date_ini,date_end,var_glider,var_model,model_name)
+                              date_ini,date_end,var_glider,var_model,model_name,delta_z=0.2)
                         

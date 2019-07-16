@@ -7,7 +7,7 @@ Created on Thu Feb  7 14:08:27 2019
 """
 
 def glider_transect_model_com_erddap_server(url_glider,dataset_id,url_model,lat_lim,lon_lim,\
-                              date_ini,date_end,var_glider,var_model,model_name):
+                              date_ini,date_end,var_glider,var_model,model_name,delta_z=0.2):
  
     """
     Created on Wed Feb  6 11:49:24 2019
@@ -34,6 +34,8 @@ def glider_transect_model_com_erddap_server(url_glider,dataset_id,url_model,lat_
         This function uses the data format '%Y-%m-%d T %H:%M:%S Z'. 
         Examaple: date_ini = '2018-08-10T00:00:00Z'
     var_glider: name of variable in glider dataset. Example "temperature"
+    delta_z: desired spacing in meters of the vertical levels of output
+             variable var_gridded. example, delta_z=0.5. Default value is 0.2
     var_model: name of variable in model output. Example "water_temp"
     model_name: short name of model. Just use to title plots
                     
@@ -83,7 +85,7 @@ def glider_transect_model_com_erddap_server(url_glider,dataset_id,url_model,lat_
                                         scatter_plot='no')
 
     depthg_gridded, varg_gridded, timeg, latg, long = \
-                       grid_glider_data_erddap(df,var_glider,contour_plot='no')
+                       grid_glider_data_erddap(df,var_glider,delta_z=0.2,contour_plot='no')
 
     # Conversion from glider longitude and latitude to GOFS convention
     target_lon = np.empty((len(long),))
