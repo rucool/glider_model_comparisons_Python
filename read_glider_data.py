@@ -44,6 +44,7 @@ def read_glider_data_thredds_server(url_glider,var,scatter_plot,**kwargs):
     import numpy as np
     import matplotlib.pyplot as plt
     import matplotlib.dates as mdates
+    import cmocean
     
     date_ini = kwargs.get('date_ini', None)
     date_end = kwargs.get('date_end', None)
@@ -52,10 +53,10 @@ def read_glider_data_thredds_server(url_glider,var,scatter_plot,**kwargs):
     
     inst_id = gdata.id.split('_')[0]
 
-    variable =gdata.variables[var][0][:]
-    latitude = gdata.latitude[0]
-    longitude = gdata.longitude[0]
-    depth = gdata.depth[0]
+    variable = np.asarray(gdata.variables[var][0][:])
+    latitude = np.asarray(gdata.latitude[0])
+    longitude = np.asarray(gdata.longitude[0])
+    depth = np.asarray(gdata.depth[0])
     
     time = gdata.time[0]
     time = netCDF4.num2date(time,time.units)
@@ -74,15 +75,24 @@ def read_glider_data_thredds_server(url_glider,var,scatter_plot,**kwargs):
     oktimeg = np.logical_and(time >= tti,time <= tte)
         
     # Fiels within time window
-    varg =  variable[oktimeg,:]
+    varg =  variable[oktimeg,:].T
     latg = latitude[oktimeg]
     long = longitude[oktimeg]
-    depthg = depth[oktimeg,:]
+    depthg = depth[oktimeg,:].T
     timeg = time[oktimeg]
     
     # Scatter plot
     if scatter_plot == 'yes':
-        timeg_matrix = np.transpose(np.tile(timeg.T,(depthg.shape[1],1)))
+        
+        if var == 'temperature':
+            color_map = cmocean.cm.thermal
+        else:
+            if var == 'salinity':
+                color_map = cmocean.cm.haline
+            else:
+                color_map = 'RdBu_r'
+        
+        timeg_matrix = np.tile(timeg.T,(depthg.shape[0],1))
         ttg = np.ravel(timeg_matrix)
         dg = np.ravel(depthg)
         teg = np.ravel(varg)
@@ -90,16 +100,17 @@ def read_glider_data_thredds_server(url_glider,var,scatter_plot,**kwargs):
         kw = dict(c=teg, marker='*', edgecolor='none')
 
         fig, ax = plt.subplots(figsize=(10, 6))
-        cs = ax.scatter(ttg,-dg,cmap='RdYlBu_r',**kw)
+        cs = ax.scatter(ttg,-dg,cmap=color_map,**kw)
         #fig.colorbar(cs)
         ax.set_xlim(timeg[0], timeg[-1])
 
         ax.set_ylabel('Depth (m)',fontsize=16)
         cbar = plt.colorbar(cs)
         cbar.ax.set_ylabel(var,fontsize=16)
-        ax.set_title(inst_id.split('-')[0],fontsize=20)
+        ax.set_title(inst_id,fontsize=20)
         xfmt = mdates.DateFormatter('%H:%Mh\n%d-%b')
         ax.xaxis.set_major_formatter(xfmt)
+        plt.ylim([-np.nanmax(dg),0])
     
     return varg, latg, long, depthg, timeg, inst_id
 
@@ -198,6 +209,8 @@ def read_glider_data_erddap_server(url_server,dataset_id,var,\
     from erddapy import ERDDAP
     import matplotlib.pyplot as plt
     import matplotlib.dates as mdates
+    import cmocean
+    import numpy as np
 
     # Readind data set
     constraints = {
@@ -228,27 +241,45 @@ def read_glider_data_erddap_server(url_server,dataset_id,var,\
     e.variables = variables
     
     # Converting glider data to data frame
-    df = e.to_pandas(
+    # Cheching that data frame has data
+    df = e.to_pandas()
+    if len(df) != 0: 
+    
+        df = e.to_pandas(
             index_col='time (UTC)',
             parse_dates=True,
             skiprows=(1,)  # units information can be dropped.
             ).dropna()
 
-    # Scatter plot
-    if scatter_plot == 'yes':
-
-        fig, ax=plt.subplots(figsize=(10, 6), facecolor='w', edgecolor='w')
-
-        kw = dict(s=30, c=df[df.columns[3]].values, marker='*', edgecolor='none')
-        cs = ax.scatter(df.index, -df['depth (m)'], **kw, cmap='RdYlBu_r')
+        # Scatter plot
+        if scatter_plot == 'yes':
+            
+            if var == 'temperature':
+                color_map = cmocean.cm.thermal
+            else:
+                if var == 'salinity':
+                    color_map = cmocean.cm.haline
+                else:
+                    color_map = 'RdBu_r'            
+            
+            fig, ax=plt.subplots(figsize=(10, 6), facecolor='w', edgecolor='w')
+            
+            kw = dict(s=30, c=df[df.columns[3]].values, marker='*', edgecolor='none')
+            cs = ax.scatter(df.index, -df['depth (m)'], **kw, cmap=color_map)
+            
+            ax.set_xlim(df.index[0], df.index[-1])
+            xfmt = mdates.DateFormatter('%H:%Mh\n%d-%b')
+            ax.xaxis.set_major_formatter(xfmt)
+            ax.set_title(dataset_id,fontsize=20)
         
-        ax.set_xlim(df.index[0], df.index[-1])
-        xfmt = mdates.DateFormatter('%H:%Mh\n%d-%b')
-        ax.xaxis.set_major_formatter(xfmt)
+            cbar = fig.colorbar(cs, orientation='vertical')
+            cbar.ax.set_ylabel(var)
+            ax.set_ylabel('Depth (m)');
+            plt.ylim([-np.max(df['depth (m)']),0])
+    
+    else:
+        print('No glider data: data frame is empty')
         
-        cbar = fig.colorbar(cs, orientation='vertical')
-        cbar.ax.set_ylabel(var)
-        ax.set_ylabel('Depth (m)');
-
     return df
+    
      

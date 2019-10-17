@@ -83,95 +83,105 @@ def glider_transect_model_com_erddap_server(url_glider,dataset_id,url_model,lat_
     df = read_glider_data_erddap_server(url_glider,dataset_id,var_glider,\
                                         lat_lim,lon_lim,date_ini,date_end,\
                                         scatter_plot='no')
-
-    depthg_gridded, varg_gridded, timeg, latg, long = \
-                       grid_glider_data_erddap(df,var_glider,delta_z=0.2,contour_plot='no')
-
-    # Conversion from glider longitude and latitude to GOFS convention
-    target_lon = np.empty((len(long),))
-    target_lon[:] = np.nan
-    for i,ii in enumerate(long):
-        if ii < 0: 
-            target_lon[i] = 360 + ii
-        else:
-            target_lon[i] = ii
-    target_lat = latg
-
-    # Changing times to timestamp
-    tstamp_glider = [mdates.date2num(timeg[i]) for i in np.arange(len(timeg))]
-    tstamp_model = [mdates.date2num(timem[i]) for i in np.arange(len(timem))]
-
-    # interpolating glider lon and lat to lat and lon on model time
-    sublonm=np.interp(tstamp_model,tstamp_glider,target_lon)
-    sublatm=np.interp(tstamp_model,tstamp_glider,target_lat)
-
-    # getting the model grid positions for sublonm and sublatm
-    oklonm=np.round(np.interp(sublonm,lonm,np.arange(len(lonm)))).astype(int)
-    oklatm=np.round(np.interp(sublatm,latm,np.arange(len(latm)))).astype(int)
     
-    # Getting glider transect from model
-    print('Getting glider transect from model. If it breaks is because GOFS 3.1 server is not responding')
-    target_varm = np.empty((len(depthm),len(oktimem[0])))
-    target_varm[:] = np.nan
-    for i in range(len(oktimem[0])):
-        print(len(oktimem[0]),' ',i)
-        target_varm[:,i] = model.variables[var_model][oktimem[0][i],:,oklatm[i],oklonm[i]]
+    if len(df) != 0:
 
-    target_varm[target_varm < -100] = np.nan
+        depthg_gridded, varg_gridded, timeg, latg, long = \
+                       grid_glider_data_erddap(df,dataset_id,var_glider,delta_z=0.2,contour_plot='no')
 
-    # plot
-    if var_glider == 'temperature':
-        color_map = cmocean.cm.thermal
-    else:
+        # Conversion from glider longitude and latitude to GOFS convention
+        target_lon = np.empty((len(long),))
+        target_lon[:] = np.nan
+        for i,ii in enumerate(long):
+            if ii < 0: 
+                target_lon[i] = 360 + ii
+            else:
+                target_lon[i] = ii
+        target_lat = latg
+
+        # Changing times to timestamp
+        tstamp_glider = [mdates.date2num(timeg[i]) for i in np.arange(len(timeg))]
+        tstamp_model = [mdates.date2num(timem[i]) for i in np.arange(len(timem))]
+
+        # interpolating glider lon and lat to lat and lon on model time
+        sublonm=np.interp(tstamp_model,tstamp_glider,target_lon)
+        sublatm=np.interp(tstamp_model,tstamp_glider,target_lat)
+
+        # getting the model grid positions for sublonm and sublatm
+        oklonm=np.round(np.interp(sublonm,lonm,np.arange(len(lonm)))).astype(int)
+        oklatm=np.round(np.interp(sublatm,latm,np.arange(len(latm)))).astype(int)
+    
+        # Getting glider transect from model
+        print('Getting glider transect from model. If it breaks is because GOFS 3.1 server is not responding')
+        target_varm = np.empty((len(depthm),len(oktimem[0])))
+        target_varm[:] = np.nan
+        for i in range(len(oktimem[0])):
+            print(len(oktimem[0]),' ',i)
+            target_varm[:,i] = model.variables[var_model][oktimem[0][i],:,oklatm[i],oklonm[i]]
+
+        # plot
+        if var_glider == 'temperature':
+            color_map = cmocean.cm.thermal
+        else:
+            if var_glider == 'salinity':
+                color_map = cmocean.cm.haline
+            else:
+                color_map = 'RdBu_r'
+        
+        okg = depthg_gridded <= np.max(depthg_gridded) 
+        okm = depthm <= np.max(depthg_gridded) 
+        min_val = np.floor(np.min([np.nanmin(varg_gridded[okg]),np.nanmin(target_varm[okm])]))
+        max_val = np.ceil(np.max([np.nanmax(varg_gridded[okg]),np.nanmax(target_varm[okm])]))
+    
         if var_glider == 'salinity':
-            color_map = cmocean.cm.haline
+            kw = dict(levels = np.arange(min_val,max_val+0.25,0.25))
         else:
-            color_map = 'RdBu_r'
-        
-    okg = depthg_gridded <= np.max(depthg_gridded) 
-    okm = depthm <= np.max(depthg_gridded) 
-    min_val = np.floor(np.min([np.nanmin(varg_gridded[okg]),np.nanmin(target_varm[okm])]))
-    max_val = np.ceil(np.max([np.nanmax(varg_gridded[okg]),np.nanmax(target_varm[okm])]))
+            nlevels = max_val - min_val + 1
+            kw = dict(levels = np.linspace(min_val,max_val,nlevels))
     
-    if var_glider == 'salinity':
-        kw = dict(levels = np.arange(min_val,max_val+0.25,0.25))
+        # plot
+        fig, ax = plt.subplots(figsize=(12, 6))
+
+        ax = plt.subplot(211)        
+        #plt.contour(timeg,-depthg_gridded,varg_gridded,colors = 'lightgrey',**kw)
+        cs = plt.contourf(timeg,-depthg_gridded,varg_gridded,cmap=color_map,**kw)
+        plt.contour(timeg,-depthg_gridded,varg_gridded,[26],colors='k')
+
+        cs = fig.colorbar(cs, orientation='vertical') 
+        cs.ax.set_ylabel(var_glider[0].upper()+var_glider[1:],fontsize=14,labelpad=15)
+        
+        ax.set_xlim(df.index[0], df.index[-1])
+        ax.set_ylim(-np.max(depthg_gridded), 0)
+        ax.set_ylabel('Depth (m)',fontsize=14)
+        ax.set_xticklabels(' ')
+    
+        plt.title('Along Track ' + var_glider[0].upper() + var_glider[1:] + ' Profile ' + dataset_id.split('-')[0])
+    
+        ax = plt.subplot(212)        
+        #plt.contour(mdates.date2num(timem),-depthm,target_varm,colors = 'lightgrey',**kw)
+        cs = plt.contourf(mdates.date2num(timem),-depthm,target_varm,cmap=color_map,**kw)
+        plt.contour(mdates.date2num(timem),-depthm,target_varm,[26],colors='k')
+        cs = fig.colorbar(cs, orientation='vertical') 
+        cs.ax.set_ylabel(var_glider[0].upper()+var_glider[1:],fontsize=14,labelpad=15)
+
+        ax.set_xlim(df.index[0], df.index[-1])
+        ax.set_ylim(-np.max(depthg_gridded), 0)
+        ax.set_ylabel('Depth (m)',fontsize=14)
+        xfmt = mdates.DateFormatter('%H:%Mh\n%d-%b')
+        ax.xaxis.set_major_formatter(xfmt)
+
+        plt.title('Along Track ' + var_glider[0].upper() + var_glider[1:] + ' Profile ' + model_name)     
+    
     else:
-        nlevels = max_val - min_val + 1
-        kw = dict(levels = np.linspace(min_val,max_val,nlevels))
-    
-
-    # plot
-    fig, ax = plt.subplots(figsize=(12, 6))
-
-    ax = plt.subplot(211)        
-    #plt.contour(timeg,-depthg_gridded,varg_gridded,colors = 'lightgrey',**kw)
-    cs = plt.contourf(timeg,-depthg_gridded,varg_gridded,cmap=color_map,**kw)
-    plt.contour(timeg,-depthg_gridded,varg_gridded,[26],colors='k')
-
-    cs = fig.colorbar(cs, orientation='vertical') 
-    cs.ax.set_ylabel(var_glider[0].upper()+var_glider[1:],fontsize=14,labelpad=15)
+        timeg = []
+        depthg_gridded = []
+        varg_gridded = []
+        timem = []
+        depthm = []
+        target_varm = []
         
-    ax.set_xlim(df.index[0], df.index[-1])
-    ax.set_ylim(-np.max(depthg_gridded), 0)
-    ax.set_ylabel('Depth (m)',fontsize=14)
-    ax.set_xticklabels(' ')
-    
-    
-    plt.title('Along Track ' + var_glider[0].upper() + var_glider[1:] + ' Profile ' + dataset_id.split('-')[0])
-    
-    ax = plt.subplot(212)        
-    plt.contour(mdates.date2num(timem),-depthm,target_varm,colors = 'lightgrey',**kw)
-    cs = plt.contourf(mdates.date2num(timem),-depthm,target_varm,cmap=color_map,**kw)
-    plt.contour(mdates.date2num(timem),-depthm,target_varm,[26],colors='k')
-    cs = fig.colorbar(cs, orientation='vertical') 
-    cs.ax.set_ylabel(var_glider[0].upper()+var_glider[1:],fontsize=14,labelpad=15)
-
-    ax.set_xlim(df.index[0], df.index[-1])
-    ax.set_ylim(-np.max(depthg_gridded), 0)
-    ax.set_ylabel('Depth (m)',fontsize=14)
-    xfmt = mdates.DateFormatter('%H:%Mh\n%d-%b')
-    ax.xaxis.set_major_formatter(xfmt)
-
-    plt.title('Along Track ' + var_glider[0].upper() + var_glider[1:] + ' Profile ' + model_name)     
-
     return timeg,depthg_gridded,varg_gridded,timem,depthm,target_varm
+    
+        
+        
+    
