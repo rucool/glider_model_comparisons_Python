@@ -151,7 +151,7 @@ def retrieve_glider_id_erddap_server(url_server,lat_lim,lon_lim,date_ini,date_en
     e = ERDDAP(server = url_server)
 
     # Search constraints
-    kw2018 = {
+    kw = {
             'min_lon': lon_lim[0],
             'max_lon': lon_lim[1],
             'min_lat': lat_lim[0],
@@ -160,7 +160,7 @@ def retrieve_glider_id_erddap_server(url_server,lat_lim,lon_lim,date_ini,date_en
             'max_time': date_end,
             }
 
-    search_url = e.get_search_url(response='csv', **kw2018)
+    search_url = e.get_search_url(response='csv', **kw)
     search = pd.read_csv(search_url)
     
     # Extract the IDs
