@@ -3,7 +3,7 @@
 
 #%%
 
-def read_glider_data_thredds_server(url_glider,var,scatter_plot,**kwargs):
+def read_glider_data_thredds_server(url_thredds,var_name,scatter_plot,**kwargs):
     
     """
     Created on Tue Feb  5 10:05:37 2019
@@ -13,14 +13,14 @@ def read_glider_data_thredds_server(url_glider,var,scatter_plot,**kwargs):
     This function reads glider data from the IOOS Data Assembly Center (DAC).
     
     Inputs:
-    url_glider: url address or directory on local computer where the netcdf 
+    url_thredds: url address or directory on local computer where the netcdf 
                 file with the glider data resides. Example:
                 url_glider = 'https://data.ioos.us/thredds/dodsC/deployments/rutgers/ru33-20180801T1323/ru33-20180801T1323.nc3.nc'
-    var: variable to plot. Ex: 'temperature', 'salinity'. Make sure
+    var_name: variable to plot. Ex: 'temperature', 'salinity'. Make sure
         to use the same name as defined in the netcdf file
     scatter_plot: if equal to 'yes' then a scatter plot 
             of the glider transect is plotted
-    kwargs:        
+    kwargs = dict(date_ini='2018/09/01/00',date_end='2018/09/10/00')      
     date_ini: initial date the user wish to visualize the data. 
         This function uses the data format '%Y/%m/%d/%H'. 
         Examaple: date_ini = '2018/09/01/00'
@@ -49,11 +49,11 @@ def read_glider_data_thredds_server(url_glider,var,scatter_plot,**kwargs):
     date_ini = kwargs.get('date_ini', None)
     date_end = kwargs.get('date_end', None)
 
-    gdata = xr.open_dataset(url_glider,decode_times=False)
+    gdata = xr.open_dataset(url_thredds,decode_times=False)
     
     inst_id = gdata.id.split('_')[0]
 
-    variable = np.asarray(gdata.variables[var][0][:])
+    variable = np.asarray(gdata.variables[var_name][0][:])
     latitude = np.asarray(gdata.latitude[0])
     longitude = np.asarray(gdata.longitude[0])
     depth = np.asarray(gdata.depth[0])
@@ -84,10 +84,10 @@ def read_glider_data_thredds_server(url_glider,var,scatter_plot,**kwargs):
     # Scatter plot
     if scatter_plot == 'yes':
         
-        if var == 'temperature':
+        if var_name == 'temperature':
             color_map = cmocean.cm.thermal
         else:
-            if var == 'salinity':
+            if var_name == 'salinity':
                 color_map = cmocean.cm.haline
             else:
                 color_map = 'RdBu_r'
@@ -106,7 +106,7 @@ def read_glider_data_thredds_server(url_glider,var,scatter_plot,**kwargs):
 
         ax.set_ylabel('Depth (m)',fontsize=16)
         cbar = plt.colorbar(cs)
-        cbar.ax.set_ylabel(var,fontsize=16)
+        cbar.ax.set_ylabel(var_name[0].upper()+var_name[1:],fontsize=16)
         ax.set_title(inst_id,fontsize=20)
         xfmt = mdates.DateFormatter('%H:%Mh\n%d-%b')
         ax.xaxis.set_major_formatter(xfmt)
@@ -116,7 +116,7 @@ def read_glider_data_thredds_server(url_glider,var,scatter_plot,**kwargs):
 
 #%%
     
-def retrieve_glider_id_erddap_server(url_server,lat_lim,lon_lim,date_ini,date_end):
+def retrieve_glider_id_erddap_server(url_erddap,lat_lim,lon_lim,date_ini,date_end):
     
     """
     Created on Tue Feb  5 10:05:37 2019
@@ -127,17 +127,17 @@ def retrieve_glider_id_erddap_server(url_server,lat_lim,lon_lim,date_ini,date_en
     Data Assembly Center (DAC).
     
     Inputs:
-    url_server: url address of erddap server
+    url_erddap: url address of erddap server
                 Example: 'https://data.ioos.us/gliders/erddap'
     lat_lim: latitude limits for the search. 
             Example, lat_lim = [38.0,40.0]
     lon_lim: longitude limits for the search. 
             Example, lon_lim = [-75.0,-72.0]
     date_ini: initial date of time window. 
-        This function uses the data format '%Y-%m-%d T %H:%M:%S Z'. 
+        This function accepts the data formats '%Y-%m-%d T %H:%M:%S Z' and '%Y/%m/%d/%H'. 
         Examaple: date_ini = '2018-08-02T00:00:00Z' 
     date_end: initial date of time window. 
-        This function uses the data format '%Y-%m-%d T %H:%M:%S Z'. 
+        This function accepts the data formats '%Y-%m-%d T %H:%M:%S Z' and '%Y/%m/%d/%H'. 
         Examaple: date_ini = '2018-08-10T00:00:00Z'
                     
     Outputs:
@@ -148,7 +148,7 @@ def retrieve_glider_id_erddap_server(url_server,lat_lim,lon_lim,date_ini,date_en
     from erddapy import ERDDAP
     import pandas as pd
 
-    e = ERDDAP(server = url_server)
+    e = ERDDAP(server = url_erddap)
 
     # Search constraints
     kw = {
@@ -168,11 +168,10 @@ def retrieve_glider_id_erddap_server(url_server,lat_lim,lon_lim,date_ini,date_en
     
     return gliders
 
-#%% 
-
-def read_glider_data_erddap_server(url_server,dataset_id,var,\
-                                   lat_lim,lon_lim,date_ini,date_end,\
-                                   scatter_plot):
+#%%
+    
+def read_glider_data_erddap_server(url_erddap,dataset_id,var_name,\
+                                   lat_lim,lon_lim,scatter_plot,**kwargs):
     
     """
     Created on Tue Feb  5 10:05:37 2019
@@ -183,37 +182,52 @@ def read_glider_data_erddap_server(url_server,dataset_id,var,\
     Data Assembly Center (DAC).
     
     Inputs:
-    url_server: url address of thredds server
+    url_erddap: url address of thredds server
                 Example: 'https://data.ioos.us/gliders/erddap'
     dataset_id: this id is retrieved from the glider DAC using the
                function "retrieve_glider_id_erddap_server".
                Example: 'ru30-20180705T1825'
-    var: variable that needs to be read. Example, var = 'temperature'
+    var_name: variable that needs to be read. Example, var = 'temperature'
     lat_lim: latitude limits for the search. 
             Example, lat_lim = [38.0,40.0]
     lon_lim: longitude limits for the search. 
             Example, lon_lim = [-75.0,-72.0]
     date_ini: initial date of time window. 
-        This function uses the data format '%Y-%m-%d T %H:%M:%S Z'. 
-        Examaple: date_ini = '2018-08-02T00:00:00Z' 
+        This function accepts the data formats '%Y-%m-%d T %H:%M:%S Z' and '%Y/%m/%d/%H'. 
+        Examaple: date_ini = '2018-08-02T00:00:00Z' or '2018/08/02/00'
     date_end: initial date of time window. 
         This function uses the data format '%Y-%m-%d T %H:%M:%S Z'. 
-        Examaple: date_ini = '2018-08-10T00:00:00Z'
+        Examaple: date_ini = '2018-08-10T00:00:00Z' and '2018/08/10/00'
     scatter_plot: if equal to 'yes' then a scatter plot 
             of the glider transect is plotted
                     
     Outputs:
-    df: dataframe that contains the glider data
+    varg: all the glider profiles for the variable chosen within the user defined time window
+    latg: latitude within the user defined time window
+    long: longitude within the user defined time window
+    timeg: user defined time window
+    depthg: depth vector for all profiles
     """
-    
+   
     from erddapy import ERDDAP
     import matplotlib.pyplot as plt
     import matplotlib.dates as mdates
     import cmocean
     import numpy as np
-
-    # Readind data set
-    constraints = {
+    
+    date_ini = kwargs.get('date_ini', None)
+    date_end = kwargs.get('date_end', None)
+    
+    # Find time window of interest    
+    if np.logical_or(date_ini==None,date_end==None):
+        constraints = {
+            'latitude>=': lat_lim[0],
+            'latitude<=': lat_lim[1],
+            'longitude>=': lon_lim[0],
+            'longitude<=': lon_lim[1],
+            }
+    else:
+        constraints = {
             'time>=': date_ini,
             'time<=': date_end,
             'latitude>=': lat_lim[0],
@@ -221,17 +235,17 @@ def read_glider_data_erddap_server(url_server,dataset_id,var,\
             'longitude>=': lon_lim[0],
             'longitude<=': lon_lim[1],
             }
-
+     
     variables = [
             'depth',
             'latitude',
             'longitude',
             'time',
-            var,
+            var_name,
             ]
 
     e = ERDDAP(
-            server=url_server,
+            server=url_erddap,
             protocol='tabledap',
             response='nc'
             )
@@ -239,7 +253,7 @@ def read_glider_data_erddap_server(url_server,dataset_id,var,\
     e.dataset_id = dataset_id
     e.constraints = constraints
     e.variables = variables
-    
+        
     # Converting glider data to data frame
     # Cheching that data frame has data
     df = e.to_pandas()
@@ -250,36 +264,61 @@ def read_glider_data_erddap_server(url_server,dataset_id,var,\
             parse_dates=True,
             skiprows=(1,)  # units information can be dropped.
             ).dropna()
+        
+    # Coverting glider vectors into arrays
+    timeg, ind = np.unique(df.index.values,return_index=True)
+    latg = df['latitude (degrees_north)'].values[ind]
+    long = df['longitude (degrees_east)'].values[ind]
 
-        # Scatter plot
-        if scatter_plot == 'yes':
-            
-            if var == 'temperature':
-                color_map = cmocean.cm.thermal
+    dg = df['depth (m)'].values
+    vg = df[df.columns[3]].values
+
+    zn = np.int(np.max(np.diff(ind)))
+
+    depthg = np.empty((zn,len(timeg)))
+    depthg[:] = np.nan
+    varg = np.empty((zn,len(timeg)))
+    varg[:] = np.nan
+
+    for i,ii in enumerate(ind):
+        if i < len(timeg)-1:
+            depthg[0:len(dg[ind[i]:ind[i+1]]),i] = dg[ind[i]:ind[i+1]]
+            varg[0:len(vg[ind[i]:ind[i+1]]),i] = vg[ind[i]:ind[i+1]]
+        else:
+            depthg[0:len(dg[ind[i]:len(dg)]),i] = dg[ind[i]:len(dg)]
+            varg[0:len(vg[ind[i]:len(vg)]),i] = vg[ind[i]:len(vg)]        
+                      
+    # Scatter plot
+    if scatter_plot == 'yes':
+        
+        if var_name == 'temperature':
+            color_map = cmocean.cm.thermal
+        else:
+            if var_name == 'salinity':
+                color_map = cmocean.cm.haline
             else:
-                if var == 'salinity':
-                    color_map = cmocean.cm.haline
-                else:
-                    color_map = 'RdBu_r'            
-            
-            fig, ax=plt.subplots(figsize=(10, 6), facecolor='w', edgecolor='w')
-            
-            kw = dict(s=30, c=df[df.columns[3]].values, marker='*', edgecolor='none')
-            cs = ax.scatter(df.index, -df['depth (m)'], **kw, cmap=color_map)
-            
-            ax.set_xlim(df.index[0], df.index[-1])
-            xfmt = mdates.DateFormatter('%H:%Mh\n%d-%b')
-            ax.xaxis.set_major_formatter(xfmt)
-            ax.set_title(dataset_id,fontsize=20)
+                color_map = 'RdBu_r'
         
-            cbar = fig.colorbar(cs, orientation='vertical')
-            cbar.ax.set_ylabel(var)
-            ax.set_ylabel('Depth (m)');
-            plt.ylim([-np.max(df['depth (m)']),0])
-    
-    else:
-        print('No glider data: data frame is empty')
-        
-    return df
+        timeg_matrix = np.tile(timeg.T,(depthg.shape[0],1))
+        ttg = np.ravel(timeg_matrix)
+        dg = np.ravel(depthg)
+        teg = np.ravel(varg)
+
+        kw = dict(c=teg, marker='*', edgecolor='none')
+
+        fig, ax = plt.subplots(figsize=(10, 6))
+        cs = ax.scatter(ttg,-dg,cmap=color_map,**kw)
+        #fig.colorbar(cs)
+        ax.set_xlim(timeg[0], timeg[-1])
+
+        ax.set_ylabel('Depth (m)',fontsize=16)
+        cbar = plt.colorbar(cs)
+        cbar.ax.set_ylabel(var_name[0].upper()+var_name[1:],fontsize=16)
+        ax.set_title(dataset_id,fontsize=20)
+        xfmt = mdates.DateFormatter('%H:%Mh\n%d-%b')
+        ax.xaxis.set_major_formatter(xfmt)
+        plt.ylim([-np.nanmax(dg),0])
+   
+    return varg, latg, long, depthg, timeg 
     
      
