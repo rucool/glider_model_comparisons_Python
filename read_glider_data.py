@@ -170,7 +170,7 @@ def retrieve_glider_id_erddap_server(url_erddap,lat_lim,lon_lim,date_ini,date_en
 
 #%%
     
-def read_glider_data_erddap_server(url_erddap,dataset_id,var_name,\
+def read_glider_data_erddap_server(url_erddap,dataset_id,\
                                    lat_lim,lon_lim,scatter_plot,**kwargs):
     
     """
@@ -187,7 +187,6 @@ def read_glider_data_erddap_server(url_erddap,dataset_id,var_name,\
     dataset_id: this id is retrieved from the glider DAC using the
                function "retrieve_glider_id_erddap_server".
                Example: 'ru30-20180705T1825'
-    var_name: variable that needs to be read. Example, var = 'temperature'
     lat_lim: latitude limits for the search. 
             Example, lat_lim = [38.0,40.0]
     lon_lim: longitude limits for the search. 
@@ -202,7 +201,8 @@ def read_glider_data_erddap_server(url_erddap,dataset_id,var_name,\
             of the glider transect is plotted
                     
     Outputs:
-    varg: all the glider profiles for the variable chosen within the user defined time window
+    tempg: all the glider profiles of temperature within the user defined time window
+    saltg: all the glider profiles of salinity within the user defined time window
     latg: latitude within the user defined time window
     long: longitude within the user defined time window
     timeg: user defined time window
@@ -241,7 +241,8 @@ def read_glider_data_erddap_server(url_erddap,dataset_id,var_name,\
             'latitude',
             'longitude',
             'time',
-            var_name,
+            'temperature',
+            'salinity'
             ]
 
     e = ERDDAP(
@@ -271,34 +272,33 @@ def read_glider_data_erddap_server(url_erddap,dataset_id,var_name,\
     long = df['longitude (degrees_east)'].values[ind]
 
     dg = df['depth (m)'].values
-    vg = df[df.columns[3]].values
+    vg1 = df[df.columns[3]].values
+    vg2 = df[df.columns[4]].values
 
     zn = np.int(np.max(np.diff(ind)))
 
     depthg = np.empty((zn,len(timeg)))
     depthg[:] = np.nan
-    varg = np.empty((zn,len(timeg)))
-    varg[:] = np.nan
+    tempg = np.empty((zn,len(timeg)))
+    tempg[:] = np.nan
+    saltg = np.empty((zn,len(timeg)))
+    saltg[:] = np.nan
 
     for i,ii in enumerate(ind):
         if i < len(timeg)-1:
             depthg[0:len(dg[ind[i]:ind[i+1]]),i] = dg[ind[i]:ind[i+1]]
-            varg[0:len(vg[ind[i]:ind[i+1]]),i] = vg[ind[i]:ind[i+1]]
+            tempg[0:len(vg1[ind[i]:ind[i+1]]),i] = vg1[ind[i]:ind[i+1]]
+            saltg[0:len(vg2[ind[i]:ind[i+1]]),i] = vg2[ind[i]:ind[i+1]]
         else:
             depthg[0:len(dg[ind[i]:len(dg)]),i] = dg[ind[i]:len(dg)]
-            varg[0:len(vg[ind[i]:len(vg)]),i] = vg[ind[i]:len(vg)]        
+            tempg[0:len(vg1[ind[i]:len(vg1)]),i] = vg1[ind[i]:len(vg1)]
+            saltg[0:len(vg2[ind[i]:len(vg2)]),i] = vg2[ind[i]:len(vg2)]
                       
     # Scatter plot
     if scatter_plot == 'yes':
         
-        if var_name == 'temperature':
-            color_map = cmocean.cm.thermal
-        else:
-            if var_name == 'salinity':
-                color_map = cmocean.cm.haline
-            else:
-                color_map = 'RdBu_r'
-        
+        color_map = cmocean.cm.thermal
+        varg = tempg
         timeg_matrix = np.tile(timeg.T,(depthg.shape[0],1))
         ttg = np.ravel(timeg_matrix)
         dg = np.ravel(depthg)
@@ -313,12 +313,34 @@ def read_glider_data_erddap_server(url_erddap,dataset_id,var_name,\
 
         ax.set_ylabel('Depth (m)',fontsize=16)
         cbar = plt.colorbar(cs)
-        cbar.ax.set_ylabel(var_name[0].upper()+var_name[1:],fontsize=16)
+        cbar.ax.set_ylabel('Temperature',fontsize=16)
+        ax.set_title(dataset_id,fontsize=20)
+        xfmt = mdates.DateFormatter('%H:%Mh\n%d-%b')
+        ax.xaxis.set_major_formatter(xfmt)
+        plt.ylim([-np.nanmax(dg),0])
+        
+        color_map = cmocean.cm.haline
+        varg = saltg
+        timeg_matrix = np.tile(timeg.T,(depthg.shape[0],1))
+        ttg = np.ravel(timeg_matrix)
+        dg = np.ravel(depthg)
+        teg = np.ravel(varg)
+
+        kw = dict(c=teg, marker='*', edgecolor='none')
+
+        fig, ax = plt.subplots(figsize=(10, 6))
+        cs = ax.scatter(ttg,-dg,cmap=color_map,**kw)
+        #fig.colorbar(cs)
+        ax.set_xlim(timeg[0], timeg[-1])
+
+        ax.set_ylabel('Depth (m)',fontsize=16)
+        cbar = plt.colorbar(cs)
+        cbar.ax.set_ylabel('Temperature',fontsize=16)
         ax.set_title(dataset_id,fontsize=20)
         xfmt = mdates.DateFormatter('%H:%Mh\n%d-%b')
         ax.xaxis.set_major_formatter(xfmt)
         plt.ylim([-np.nanmax(dg),0])
    
-    return varg, latg, long, depthg, timeg 
+    return tempg, saltg, latg, long, depthg, timeg 
     
      
