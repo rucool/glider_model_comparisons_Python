@@ -3,7 +3,7 @@
 
 #%%
 
-def grid_glider_data(timeg,latg,long,depthg,varg,var_name,inst_id,delta_z=0.3,contour_plot='yes'):
+def grid_glider_data(var_name,dataset_id,varg,timeg,latg,long,depthg,delta_z=0.3,contour_plot='yes'):
 
     """
     Created on Wed Feb 25 2019
@@ -23,6 +23,7 @@ def grid_glider_data(timeg,latg,long,depthg,varg,var_name,inst_id,delta_z=0.3,co
     varg: variable to be gridded. example: 'temperature', 'salinity'
           it must be a 2D array with dimension timeg x depth
     var_name: name of variable to be gridded
+    dataset_id: obtained from running function "retrieve_dataset_id_erddap_server"
     delta_z: desired spacing in meters of the vertical levels of output
              variable var_gridded. example, delta_z=0.5. Default value is 0.3
     contour_plot: if equal to 'yes' then a contour plot
@@ -73,9 +74,11 @@ def grid_glider_data(timeg,latg,long,depthg,varg,var_name,inst_id,delta_z=0.3,co
         
         if var_name == 'temperature':
             color_map = cmocean.cm.thermal
+            clabel = var_name[0].upper()+var_name[1:] + ' ($^oC$)'
         else:
             if var_name == 'salinity':
                 color_map = cmocean.cm.haline
+                clabel = var_name[0].upper()+var_name[1:]
             else:
                 color_map = 'RdBu_r'
                 
@@ -93,18 +96,18 @@ def grid_glider_data(timeg,latg,long,depthg,varg,var_name,inst_id,delta_z=0.3,co
         #kw = dict(levels = np.linspace(np.round(np.nanmin(varg_gridded)),\
         #                               np.round(np.nanmax(varg_gridded)),nlevels))
 
-        fig, ax=plt.subplots(figsize=(10, 6), facecolor='w', edgecolor='w')
+        fig, ax=plt.subplots(figsize=(10, 3))
         
         plt.contour(timegg,-depthg_gridded,varg_gridded,levels=[26],colors = 'k')
         cs = plt.contourf(timegg,-depthg_gridded,varg_gridded,cmap=color_map,**kw)
-        plt.title(inst_id,fontsize=20)
+        plt.title(dataset_id,fontsize=16)
 
         ax.set_xlim(timeg[0], timeg[-1])
         xfmt = mdates.DateFormatter('%H:%Mh\n%d-%b')
         ax.xaxis.set_major_formatter(xfmt)
 
         cbar = fig.colorbar(cs, orientation='vertical')
-        cbar.ax.set_ylabel(var_name[0].upper()+var_name[1:],fontsize=16)
-        ax.set_ylabel('Depth (m)',fontsize=16)
+        cbar.ax.set_ylabel(clabel,fontsize=14)
+        ax.set_ylabel('Depth (m)',fontsize=14)
 
-    return depthg_gridded, varg_gridded, timegg
+    return varg_gridded, timegg, depthg_gridded,

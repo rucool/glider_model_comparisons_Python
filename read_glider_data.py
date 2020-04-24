@@ -51,7 +51,7 @@ def read_glider_data_thredds_server(url_thredds,var_name,scatter_plot,**kwargs):
 
     gdata = xr.open_dataset(url_thredds,decode_times=False)
     
-    inst_id = gdata.id.split('_')[0]
+    dataset_id = gdata.id.split('_')[0]
 
     variable = np.asarray(gdata.variables[var_name][0][:])
     latitude = np.asarray(gdata.latitude[0])
@@ -86,9 +86,11 @@ def read_glider_data_thredds_server(url_thredds,var_name,scatter_plot,**kwargs):
         
         if var_name == 'temperature':
             color_map = cmocean.cm.thermal
+            clabel = var_name[0].upper()+var_name[1:] + ' ($^oC$)'
         else:
             if var_name == 'salinity':
                 color_map = cmocean.cm.haline
+                clabel = var_name[0].upper()+var_name[1:]
             else:
                 color_map = 'RdBu_r'
         
@@ -99,24 +101,24 @@ def read_glider_data_thredds_server(url_thredds,var_name,scatter_plot,**kwargs):
 
         kw = dict(c=teg, marker='*', edgecolor='none')
 
-        fig, ax = plt.subplots(figsize=(10, 6))
+        fig, ax = plt.subplots(figsize=(10, 3))
         cs = ax.scatter(ttg,-dg,cmap=color_map,**kw)
         #fig.colorbar(cs)
         ax.set_xlim(timeg[0], timeg[-1])
 
-        ax.set_ylabel('Depth (m)',fontsize=16)
+        ax.set_ylabel('Depth (m)',fontsize=14)
         cbar = plt.colorbar(cs)
-        cbar.ax.set_ylabel(var_name[0].upper()+var_name[1:],fontsize=16)
-        ax.set_title(inst_id,fontsize=20)
+        cbar.ax.set_ylabel(clabel,fontsize=14)
+        ax.set_title(dataset_id,fontsize=16)
         xfmt = mdates.DateFormatter('%H:%Mh\n%d-%b')
         ax.xaxis.set_major_formatter(xfmt)
         plt.ylim([-np.nanmax(dg),0])
     
-    return varg, latg, long, depthg, timeg, inst_id
+    return varg, timeg, latg, long, depthg, dataset_id
 
 #%%
     
-def retrieve_glider_id_erddap_server(url_erddap,lat_lim,lon_lim,date_ini,date_end):
+def retrieve_dataset_id_erddap_server(url_erddap,lat_lim,lon_lim,date_ini,date_end):
     
     """
     Created on Tue Feb  5 10:05:37 2019
@@ -306,15 +308,15 @@ def read_glider_data_erddap_server(url_erddap,dataset_id,\
 
         kw = dict(c=teg, marker='*', edgecolor='none')
 
-        fig, ax = plt.subplots(figsize=(10, 6))
+        fig, ax = plt.subplots(figsize=(10, 3))
         cs = ax.scatter(ttg,-dg,cmap=color_map,**kw)
         #fig.colorbar(cs)
         ax.set_xlim(timeg[0], timeg[-1])
 
-        ax.set_ylabel('Depth (m)',fontsize=16)
+        ax.set_ylabel('Depth (m)',fontsize=14)
         cbar = plt.colorbar(cs)
-        cbar.ax.set_ylabel('Temperature',fontsize=16)
-        ax.set_title(dataset_id,fontsize=20)
+        cbar.ax.set_ylabel('Temperature ($^oC$)',fontsize=14)
+        ax.set_title(dataset_id,fontsize=16)
         xfmt = mdates.DateFormatter('%H:%Mh\n%d-%b')
         ax.xaxis.set_major_formatter(xfmt)
         plt.ylim([-np.nanmax(dg),0])
@@ -328,19 +330,19 @@ def read_glider_data_erddap_server(url_erddap,dataset_id,\
 
         kw = dict(c=teg, marker='*', edgecolor='none')
 
-        fig, ax = plt.subplots(figsize=(10, 6))
+        fig, ax = plt.subplots(figsize=(10, 3))
         cs = ax.scatter(ttg,-dg,cmap=color_map,**kw)
         #fig.colorbar(cs)
         ax.set_xlim(timeg[0], timeg[-1])
 
-        ax.set_ylabel('Depth (m)',fontsize=16)
+        ax.set_ylabel('Depth (m)',fontsize=14)
         cbar = plt.colorbar(cs)
-        cbar.ax.set_ylabel('Temperature',fontsize=16)
-        ax.set_title(dataset_id,fontsize=20)
+        cbar.ax.set_ylabel('Salinity',fontsize=14)
+        ax.set_title(dataset_id,fontsize=16)
         xfmt = mdates.DateFormatter('%H:%Mh\n%d-%b')
         ax.xaxis.set_major_formatter(xfmt)
         plt.ylim([-np.nanmax(dg),0])
    
-    return tempg, saltg, latg, long, depthg, timeg 
+    return tempg, saltg, timeg, latg, long, depthg
     
      
