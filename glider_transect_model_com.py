@@ -7,7 +7,7 @@ Created on Thu Feb  7 14:08:27 2019
 """
 
 #%% 
-def get_glider_transect_GOFS(url_model,var_name_model,model_name,varg,timeg,latg,long,depthg,contour_plot='yes'):
+def get_glider_transect_from_GOFS(url_model,var_name_model,model_name,varg,timeg,latg,long,depthg,contour_plot='yes'):
 
     """
     Created on April 23 2020
