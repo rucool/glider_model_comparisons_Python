@@ -6,7 +6,7 @@ Created on Tue Feb  5 10:21:51 2019
 @author: aristizabal
 """
 
-#%% Cell #1: reads glider data from the IOOS thredds server and plots a    
+#%% Cell #1: Read glider data from the IOOS thredds server and plots a    
 #   scatter plot of a glider transect for the entire length of the deployment
 
 from read_glider_data import read_glider_data_thredds_server
@@ -21,7 +21,7 @@ varg, timeg, latg, long, depthg, dataset_id = \
              read_glider_data_thredds_server(url_thredds,var_name,scatter_plot)             
              
 
-#%% Cell #2: reads glider data from the IOOS thredds server and plots a    
+#%% Cell #2: Read glider data from the IOOS thredds server and plots a    
 #   scatter plot of a glider transect for a specific time window
 
 from read_glider_data import read_glider_data_thredds_server
@@ -42,7 +42,7 @@ kwargs = dict(date_ini=date_ini,date_end=date_end)
 varg, timeg, latg, long, depthg, dataset_id = \
              read_glider_data_thredds_server(url_thredds,var_name,scatter_plot,**kwargs)
 
-#%% Cell #3: same as cell #2, in addition to interpolating the variable 
+#%% Cell #3: Same as cell #2, in addition to interpolating the variable 
 # of interest (temperature, salinity or density) to regular depth levels
 # (gridding variables in the vertical)                      
     
@@ -70,7 +70,7 @@ contour_plot = 'yes'  # default value is 'yes'
 tempg_gridded, timegg, depthg_gridded = \
                     grid_glider_data(var_name,dataset_id,tempg,timeg,latg,long,depthg,delta_z,contour_plot)   
 
-#%% Cell #4: search for glider data sets given 
+#%% Cell #4: Search for glider data sets given 
 #   a latitude and longitude box and time window 
           
 from read_glider_data import retrieve_dataset_id_erddap_server
@@ -100,7 +100,7 @@ gliders = retrieve_dataset_id_erddap_server(url_erddap,lat_lim,lon_lim,date_ini,
 print('The gliders found are ')
 print(gliders)
              
-#%% Cell #5: search for glider data sets given a 
+#%% Cell #5: Search for glider data sets given a 
 #   latitude and longitude box and time window, choose one those data sets 
 #   (glider_id), plot a scatter plot of the chosen glider transect, grid 
 #   and plot a contour plot of the chosen glider transect 
@@ -153,9 +153,9 @@ delta_z = 0.4     # default value is 0.3
 tempg_gridded, timegg, depthg_gridded = \
                     grid_glider_data(var_name,dataset_id,tempg,timeg,latg,long,depthg,delta_z,contour_plot)
                                                    
-#%% cell #6: search for glider data sets given a 
+#%% cell #6: Search for glider data sets given a 
 #    latitude and longitude box and time window, choose one those data sets 
-#    (glider_id), grid in the vertical the glider transect, get the glider
+#    (dataset_id), grid in the vertical the glider transect, get the glider
 #    transect in the GOFS 3.1 grid, and plot both the transect from the glider
 #    deployment and GOFS 3.1 output
 
@@ -207,13 +207,13 @@ tempg_gridded, timegg, depthg_gridded = \
 # Get temperature transect from model    
 temp_GOFS, time_GOFS, depth_GOFS, lat_GOFS, lon_GOFS = \
               get_glider_transect_from_GOFS(url_GOFS,var_name_model,model_name,\
-                                        tempg,timeg,latg,long,depthg,contour_plot='yes')
+                                        tempg,timeg,latg,long,depthg,contour_plot)
                   
-#%% cell #7: search for glider data sets given a 
+#%% cell #7: Search for glider data sets given a 
 #    latitude and longitude box and time window, choose one those data sets 
-#    (glider_id), grid in the vertical the glider transect, get the glider
-#    transect in the GOFS 3.1 grid, and plot both the transect from the glider
-#    deployment and GOFS 3.1 output
+#    (dataset_id), grid in the vertical the glider transect, get the glider
+#    transect in the AmSeas grid, and plot both the transect from the glider
+#    deployment and the AmSeas output
 
 from read_glider_data import read_glider_data_erddap_server
 from read_glider_data import retrieve_dataset_id_erddap_server
