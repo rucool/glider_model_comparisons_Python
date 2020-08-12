@@ -263,19 +263,18 @@ def get_glider_transect_from_Amseas(url_amseas,var_name_model,model_name,\
         nlevels = max_val - min_val + 1
         kw = dict(levels = np.linspace(min_val,max_val,nlevels))
 
-
-    fig, ax = plt.subplots(figsize=(10, 3))
-    cs = plt.contourf(mdates.date2num(time_amseas),-depth_amseas,var_amseas,cmap=color_map,**kw)
-    plt.contour(mdates.date2num(time_amseas),-depth_amseas,var_amseas,[26],colors='k')
-    cs = fig.colorbar(cs, orientation='vertical')
-    cs.ax.set_ylabel(clabel,fontsize=14,labelpad=15)
-
-    ax.set_xlim(timeg[0], timeg[-1])
-    ax.set_ylim(-np.nanmax(depthg), 0)
-    ax.set_ylabel('Depth (m)',fontsize=14)
-    xfmt = mdates.DateFormatter('%H:%Mh\n%d-%b')
-    ax.xaxis.set_major_formatter(xfmt)
-    plt.title('Along Track ' + var_name_model[0].upper() + var_name_model[1:] +\
-              ' Profile ' + model_name,fontsize=16)
+        fig, ax = plt.subplots(figsize=(10, 3))
+        cs = plt.contourf(mdates.date2num(time_amseas),-depth_amseas,var_amseas,cmap=color_map,**kw)
+        plt.contour(mdates.date2num(time_amseas),-depth_amseas,var_amseas,[26],colors='k')
+        cs = fig.colorbar(cs, orientation='vertical')
+        cs.ax.set_ylabel(clabel,fontsize=14,labelpad=15)
+    
+        ax.set_xlim(timeg[0], timeg[-1])
+        ax.set_ylim(-np.nanmax(depthg), 0)
+        ax.set_ylabel('Depth (m)',fontsize=14)
+        xfmt = mdates.DateFormatter('%H:%Mh\n%d-%b')
+        ax.xaxis.set_major_formatter(xfmt)
+        plt.title('Along Track ' + var_name_model[0].upper() + var_name_model[1:] +\
+                  ' Profile ' + model_name,fontsize=16)
 
     return var_amseas, time_amseas, depth_amseas, lat_amseas, lon_amseas
