@@ -252,16 +252,16 @@ def get_glider_transect_from_Amseas(url_amseas,var_name_model,model_name,\
             else:
                 color_map = 'RdBu_r'
 
-    okg = depthg <= np.nanmax(depthg)
-    okm = depth_amseas <= np.nanmax(depthg)
-    min_val = np.int(np.floor(np.min([np.nanmin(varg[okg]),np.nanmin(var_amseas[okm])])))
-    max_val = np.int(np.ceil(np.max([np.nanmax(varg[okg]),np.nanmax(var_amseas[okm])])))
+        okg = depthg <= np.nanmax(depthg)
+        okm = depth_amseas <= np.nanmax(depthg)
+        min_val = np.int(np.floor(np.min([np.nanmin(varg[okg]),np.nanmin(var_amseas[okm])])))
+        max_val = np.int(np.ceil(np.max([np.nanmax(varg[okg]),np.nanmax(var_amseas[okm])])))
 
-    if var_name_model == 'salinity':
-        kw = dict(levels = np.arange(min_val,max_val+0.25,0.25))
-    else:
-        nlevels = max_val - min_val + 1
-        kw = dict(levels = np.linspace(min_val,max_val,nlevels))
+        if var_name_model == 'salinity':
+            kw = dict(levels = np.arange(min_val,max_val+0.25,0.25))
+        else:
+            nlevels = max_val - min_val + 1
+            kw = dict(levels = np.linspace(min_val,max_val,nlevels))
 
         fig, ax = plt.subplots(figsize=(10, 3))
         cs = plt.contourf(mdates.date2num(time_amseas),-depth_amseas,var_amseas,cmap=color_map,**kw)
