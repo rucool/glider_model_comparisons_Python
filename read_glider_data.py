@@ -277,7 +277,7 @@ def read_glider_data_erddap_server(url_erddap,dataset_id,\
     vg1 = df[df.columns[3]].values
     vg2 = df[df.columns[4]].values
 
-    zn = np.int(np.max(np.diff(ind)))
+    zn = np.int(np.max(np.diff(np.hstack([ind,len(dg)]))))
 
     depthg = np.empty((zn,len(timeg)))
     depthg[:] = np.nan
