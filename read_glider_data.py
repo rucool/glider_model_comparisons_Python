@@ -39,7 +39,6 @@ def read_glider_data_thredds_server(url_thredds,var_name,scatter_plot,**kwargs):
     """
 
     import xarray as xr
-    import netCDF4
     import datetime
     import numpy as np
     import matplotlib.pyplot as plt
@@ -49,17 +48,18 @@ def read_glider_data_thredds_server(url_thredds,var_name,scatter_plot,**kwargs):
     date_ini = kwargs.get('date_ini', None)
     date_end = kwargs.get('date_end', None)
 
-    gdata = xr.open_dataset(url_thredds,decode_times=False)
+    gdata = xr.open_dataset(url_thredds+'#fillmismatch')#,decode_times=False)
     
     dataset_id = gdata.id.split('_')[0]
-
     variable = np.asarray(gdata.variables[var_name][0][:])
     latitude = np.asarray(gdata.latitude[0])
     longitude = np.asarray(gdata.longitude[0])
     depth = np.asarray(gdata.depth[0])
     
-    time = gdata.time[0]
-    time = netCDF4.num2date(time,time.units)
+    time = np.asarray(gdata.time[0])
+    time = np.asarray(mdates.num2date(mdates.date2num(time)))
+    #time = netCDF4.num2date(time,time.units)
+    #timestamp = np.asarray(gdata.time[0])
     
     # Find time window of interest    
     if date_ini==None:
@@ -72,7 +72,8 @@ def read_glider_data_thredds_server(url_thredds,var_name,scatter_plot,**kwargs):
     else:
         tte = datetime.datetime.strptime(date_end,'%Y/%m/%d/%H')
         
-    oktimeg = np.logical_and(time >= tti,time <= tte)
+    oktimeg = np.logical_and(mdates.date2num(time) >= mdates.date2num(tti),\
+                             mdates.date2num(time) <= mdates.date2num(tte))
         
     # Fiels within time window
     varg =  variable[oktimeg,:].T
@@ -103,7 +104,6 @@ def read_glider_data_thredds_server(url_thredds,var_name,scatter_plot,**kwargs):
 
         fig, ax = plt.subplots(figsize=(10, 3))
         cs = ax.scatter(ttg,-dg,cmap=color_map,**kw)
-        #fig.colorbar(cs)
         ax.set_xlim(timeg[0], timeg[-1])
 
         ax.set_ylabel('Depth (m)',fontsize=14)

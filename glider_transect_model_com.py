@@ -198,7 +198,7 @@ def get_glider_transect_from_Amseas(url_amseas,var_name_model,model_name,\
         amseas = xr.open_dataset(file_amseas,decode_times=False)
 
         ttm = amseas.time
-        tm.append(netCDF4.num2date(ttm[:],ttm.units)[0])
+        tm.append(datetime.strptime(str(netCDF4.num2date(ttm[:],ttm.units)[0]),'%Y-%m-%d %H:%M:%S'))
     time_amseas = np.asarray(tm)
 
     # Conversion from glider longitude and latitude to GOFS convention

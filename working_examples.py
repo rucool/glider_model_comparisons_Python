@@ -230,7 +230,7 @@ lat_lim = [10.0,30.0]
 
 # date limits
 date_ini = '2019/09/10/00'
-date_end = '2019/09/20/00'
+date_end = '2019/09/15/00'
 kwargs = dict(date_ini=date_ini,date_end=date_end)
 
 scatter_plot = 'yes'
