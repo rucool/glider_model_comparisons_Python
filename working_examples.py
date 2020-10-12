@@ -254,3 +254,32 @@ tempg_gridded, timegg, depthg_gridded = \
 temp_amseas, time_amseas, depth_amseas, lat_amseas, lon_amseas = \
               get_glider_transect_from_Amseas(url_amseas,var_name_model,model_name,\
                                         tempg,timeg,latg,long,depthg,contour_plot='yes') 
+
+#%% cell #8: Extract a transect from GOFs 3.1 given
+# times, latitudes and longitudes of the transect 
+                  
+from glider_transect_model_com import get_transect_from_GOFS
+
+# Servers location
+url_model = 'http://tds.hycom.org/thredds/dodsC/GLBy0.08/expt_93.0/ts3z'
+
+# model variable name
+model_name = 'GOFS 3.1'
+var_name_model = 'water_temp'
+
+contour_plot = 'yes' # default value is 'yes'
+
+#time = timeg
+#lat = latg
+#lon = long
+
+from datetime import datetime, timedelta
+import numpy as np
+ndays = 3
+time = np.array([datetime(2020,9,1,0) + timedelta(np.float(i)) for i in np.arange(ndays)])
+lat = np.arange(20,20+ndays,1)
+lon = np.arange(-45,-45+ndays,1)
+
+var_model, ttmodel, depth_model, lat_model, lon_model = \
+    get_transect_from_GOFS(url_model,var_name_model,model_name,time,lat,lon,contour_plot='yes')
+                  
