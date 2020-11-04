@@ -99,7 +99,57 @@ date_end = '2019/09/10/00'
 gliders = retrieve_dataset_id_erddap_server(url_erddap,lat_lim,lon_lim,date_ini,date_end)
 print('The gliders found are ')
 print(gliders)
-             
+
+#%% Given a glider data set, Search for available
+# variables within that data set 
+
+from read_glider_data import retrieve_variable_names_erddap_server
+
+# Server location
+url_erddap = 'https://data.ioos.us/gliders/erddap'
+dataset_id = 'ng231-20190901T0000'
+
+variable_names = retrieve_variable_names_erddap_server(url_erddap,dataset_id)
+
+
+#%% Read glider data given a dataset_id, a list of variables,
+# latitude and logitude limits, a time window (optional).
+# It also converts depth and temperatute and salinity (if these variables are
+# requested) from vectors to 2 dimensional arrays with dimensions (depth,time) 
+
+from read_glider_data import read_glider_variables_erddap_server
+from process_glider_data import convert_glider_vectors_to_arrays
+
+# Server location
+url_erddap = 'https://data.ioos.us/gliders/erddap'
+dataset_id = 'ng231-20190901T0000'
+
+# Caribbean
+lon_lim = [-80,-60.0]
+lat_lim = [10.0,30.0]
+
+# date limits
+date_ini = '2019/09/01/00'
+date_end = '2019/09/10/00'
+
+dataset_id = 'ng231-20190901T0000'
+
+kwargs = dict(date_ini=date_ini,date_end=date_end)
+
+variable_names = [
+            'depth',
+            'latitude',
+            'longitude',
+            'time',
+            'temperature',
+            'salinity'
+            ]
+
+df = read_glider_variables_erddap_server(url_erddap,dataset_id,lat_lim,lon_lim,\
+                                   variable_names,**kwargs)
+    
+variable_values = convert_glider_vectors_to_arrays(df) 
+
 #%% Cell #5: Search for glider data sets given a 
 #   latitude and longitude box and time window, choose one those data sets 
 #   (glider_id), plot a scatter plot of the chosen glider transect, grid 
@@ -159,8 +209,8 @@ tempg_gridded, timegg, depthg_gridded = \
 #    transect in the GOFS 3.1 grid, and plot both the transect from the glider
 #    deployment and GOFS 3.1 output
 
-from read_glider_data import read_glider_data_erddap_server
 from read_glider_data import retrieve_dataset_id_erddap_server
+from read_glider_data import read_glider_data_erddap_server
 from process_glider_data import grid_glider_data
 from glider_transect_model_com import get_glider_transect_from_GOFS
 
@@ -215,8 +265,8 @@ temp_GOFS, time_GOFS, depth_GOFS, lat_GOFS, lon_GOFS = \
 #    transect in the AmSeas grid, and plot both the transect from the glider
 #    deployment and the AmSeas output
 
-from read_glider_data import read_glider_data_erddap_server
 from read_glider_data import retrieve_dataset_id_erddap_server
+from read_glider_data import read_glider_data_erddap_server
 from process_glider_data import grid_glider_data
 from glider_transect_model_com import get_glider_transect_from_Amseas
 

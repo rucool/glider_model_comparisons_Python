@@ -298,7 +298,7 @@ def get_transect_from_GOFS(url_model,var_name_model,model_name,time,lat,lon,cont
     model_name: short name of model. Just use to title plots
     lat: latitude vector
     lon: longitude vector
-    time: time vector
+    time: time vector of type datetime
 
     Outputs:
     var_model
@@ -328,8 +328,8 @@ def get_transect_from_GOFS(url_model,var_name_model,model_name,time,lat,lon,cont
 
     tini = mdates.num2date(mdates.date2num(time[0]))
     tend = mdates.num2date(mdates.date2num(time[-1]))
-    #tini = timeg[0]
-    #tend = timeg[-1]
+    #tini = time[0]
+    #tend = time[-1]
 
     oktimem = np.where(np.logical_and(tm >= tini,tm <= tend))
     
@@ -380,6 +380,7 @@ def get_transect_from_GOFS(url_model,var_name_model,model_name,time,lat,lon,cont
                 clabel = var_name_model[0].upper()+var_name_model[1:]
             else:
                 color_map = 'RdBu_r'
+                clabel = ' '
 
         min_val = np.int(np.floor(np.nanmin(var_model)))
         max_val = np.int(np.ceil(np.nanmax(var_model)))
@@ -387,8 +388,10 @@ def get_transect_from_GOFS(url_model,var_name_model,model_name,time,lat,lon,cont
         if var_name_model == 'salinity':
             kw = dict(levels = np.arange(min_val,max_val+0.25,0.25))
         else:
-            nlevels = max_val - min_val + 1
-            kw = dict(levels = np.linspace(min_val,max_val,nlevels))
+            if var_name_model == 'water_temp':
+                kw = dict(levels = np.arange(min_val,max_val,0.5))
+            else:
+                kw = dict(levels = np.arange(min_val,max_val,0.1))
         
         fig, ax = plt.subplots(figsize=(10, 3))
         cs = plt.contourf(ttmodel,-depth_model,var_model,cmap=color_map,**kw)

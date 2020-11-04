@@ -2,8 +2,58 @@
 # -*- coding: utf-8 -*-
 
 #%%
+def find_profiles(depth_vector,variable_vector):
+    
+    """
+    Created on Wed Nov  4 16:51:19 2020
+    
+    @author: aristizabal
+    
+    This function finds the upcast and downcast profiles based on the 
+    depth variable
+    
+    Inputs:
+    depth_vector: depth vector used to find the upcasts and downcasts
+    variable_vector: variable that needs to be converted from vector to 
+                     2 dimensional array with dimensions (depth, time)
+    
+    """
+    
+    dg = depth_vector
+    vg = variable_vector
+    
+    import numpy as np
+        
+    upcast = np.where(np.diff(dg) < 0)[0]
+    oku = np.where(np.diff(upcast)>1)[0]
+    end_upcast = upcast[oku]
+    
+    downcast = np.where(np.diff(dg) > 0)[0]
+    okd = np.where(np.diff(downcast)>1)[0]
+    end_downcast = downcast[okd]
+    
+    ind = np.hstack([0,np.unique(np.hstack([end_upcast,end_downcast])),len(dg)])
+    zn = np.max(np.diff(ind))
+    
+    varg = np.empty((zn,len(ind)))
+    varg[:] = np.nan
+    for i in np.arange(len(ind)):
+        if i == 0:
+            indd = np.argsort(vg[ind[i]:ind[i+1]+2])
+            varg[0:len(vg[ind[i]:ind[i+1]+2]),i] = vg[ind[i]:ind[i+1]+2][indd]
+        if i < len(ind)-1:
+            indd = np.argsort(vg[ind[i]+1:ind[i+1]+2])
+            varg[0:len(vg[ind[i]+1:ind[i+1]+2]),i] = vg[ind[i]+1:ind[i+1]+2][indd]
+        else:
+            indd = np.argsort(vg[ind[i]+1:len(vg)])
+            varg[0:len(vg[ind[i]+1:len(vg)]),i] = vg[ind[i]+1:len(vg)][indd]
+     
+    variable_array = varg     
+    return variable_array
 
-def grid_glider_data(var_name,dataset_id,varg,timeg,latg,long,depthg,delta_z=0.3,contour_plot='yes'):
+#%%
+
+def grid_glider_data(var_name,dataset_id,varg,timeg,depthg,delta_z=0.3,contour_plot='yes'):
 
     """
     Created on Wed Feb 25 2019
@@ -44,8 +94,6 @@ def grid_glider_data(var_name,dataset_id,varg,timeg,latg,long,depthg,delta_z=0.3
     # sort time variable
     okt = np.argsort(timeg)
     timegg = timeg[okt]
-    #latgg = latg[okt]
-    #longg = long[okt]
     depthgg = depthg[:,okt]
     vargg = varg[:,okt]
 

@@ -75,7 +75,7 @@ def read_glider_data_thredds_server(url_thredds,var_name,scatter_plot,**kwargs):
     oktimeg = np.logical_and(mdates.date2num(time) >= mdates.date2num(tti),\
                              mdates.date2num(time) <= mdates.date2num(tte))
         
-    # Fiels within time window
+    # Fields within time window
     varg =  variable[oktimeg,:].T
     latg = latitude[oktimeg]
     long = longitude[oktimeg]
@@ -170,6 +170,133 @@ def retrieve_dataset_id_erddap_server(url_erddap,lat_lim,lon_lim,date_ini,date_e
     
     return gliders
 
+#%% 
+    
+def retrieve_variable_names_erddap_server(url_erddap,dataset_id):
+    
+    """
+    Created on Tue Nov  3 11:26:05 2020
+    
+    @author: aristizabal
+    
+    This function retrieves the variable names from the IOOS 
+    and Rutgers erddapp glider servers.
+    
+    Inputs:
+    url_erddap: url address of erddap server
+                Example: 'https://data.ioos.us/gliders/erddap'
+    dataset_id: Example: 'ng231-20190901T0000'
+                        
+    Outputs:
+    variables: list of variables for the requested dataset_id
+    
+    """
+
+    from erddapy import ERDDAP
+    
+    e = ERDDAP(
+        server=url_erddap,
+        protocol='tabledap',
+        response='nc')
+    
+    e.dataset_id = dataset_id
+    
+    df = e.to_pandas()
+    
+    variable_names = [var for var in df.columns]
+    print('List of available variables ')
+    print(variable_names)
+    
+    return variable_names
+
+#%% 
+    
+def read_glider_variables_erddap_server(url_erddap,dataset_id,\
+                                   lat_lim,lon_lim,\
+                                   variable_names=['time'],
+                                    **kwargs):
+    
+    """
+    Created on Tue Nov  3 11:26:05 2020
+    
+    @author: aristizabal
+    
+    This function reads glider variables from the IOOS 
+    and Rutgers erddapp glider servers.
+    
+    Inputs:
+    url_erddap: url address of erddap server
+                Example: 'https://data.ioos.us/gliders/erddap'
+    dataset_id: Example: 'ng231-20190901T0000'
+    variable_names: list of variable names.
+                    Example: 
+                            variable_names = ['depth',
+                                            'latitude',
+                                            'longitude',
+                                            'time',
+                                            'temperature',
+                                            'salinity']
+                    The default value is variable_names=['time']
+    lat_lim: latitude limits for the search. 
+            Example, lat_lim = [38.0,40.0]
+    lon_lim: longitude limits for the search. 
+            Example, lon_lim = [-75.0,-72.0]
+    date_ini: initial date of time window. 
+        This function accepts the data formats '%Y-%m-%d T %H:%M:%S Z' and '%Y/%m/%d/%H'. 
+        Examaple: date_ini = '2018-08-02T00:00:00Z' or '2018/08/02/00'
+    date_end: initial date of time window. 
+        This function uses the data format '%Y-%m-%d T %H:%M:%S Z'. 
+        Examaple: date_ini = '2018-08-10T00:00:00Z' and '2018/08/10/00'
+                            
+    Outputs:
+    df: Pandas data frame with all the variables requested as vectors
+    
+    """
+    
+    from erddapy import ERDDAP
+    import numpy as np
+    
+    date_ini = kwargs.get('date_ini', None)
+    date_end = kwargs.get('date_end', None)
+    
+    # Find time window of interest    
+    if np.logical_or(date_ini==None,date_end==None):
+        constraints = {
+            'latitude>=': lat_lim[0],
+            'latitude<=': lat_lim[1],
+            'longitude>=': lon_lim[0],
+            'longitude<=': lon_lim[1],
+            }
+    else:
+        constraints = {
+            'time>=': date_ini,
+            'time<=': date_end,
+            'latitude>=': lat_lim[0],
+            'latitude<=': lat_lim[1],
+            'longitude>=': lon_lim[0],
+            'longitude<=': lon_lim[1],
+            }
+
+    e = ERDDAP(
+            server=url_erddap,
+            protocol='tabledap',
+            response='nc'
+            )
+
+    e.dataset_id = dataset_id
+    e.constraints = constraints
+    e.variables = variable_names
+        
+    # Converting glider data to data frame
+    # Cheching that data frame has data
+    df = e.to_pandas()
+    if len(df) != 0: 
+    
+        df = e.to_pandas(
+            parse_dates=True)
+        
+    return df
+    
 #%%
     
 def read_glider_data_erddap_server(url_erddap,dataset_id,\
