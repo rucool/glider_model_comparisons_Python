@@ -68,7 +68,7 @@ delta_z = 0.4 # bin size in the vertical when gridding the variable vertical pro
               # default value is 0.3   
 contour_plot = 'yes'  # default value is 'yes'   
 tempg_gridded, timegg, depthg_gridded = \
-                    grid_glider_data(var_name,dataset_id,tempg,timeg,latg,long,depthg,delta_z,contour_plot)   
+                    grid_glider_data(var_name,dataset_id,tempg,timeg,depthg,delta_z,contour_plot)   
 
 #%% Cell #4: Search for glider data sets given 
 #   a latitude and longitude box and time window 
@@ -118,7 +118,6 @@ variable_names = retrieve_variable_names_erddap_server(url_erddap,dataset_id)
 # requested) from vectors to 2 dimensional arrays with dimensions (depth,time) 
 
 from read_glider_data import read_glider_variables_erddap_server
-from process_glider_data import convert_glider_vectors_to_arrays
 
 # Server location
 url_erddap = 'https://data.ioos.us/gliders/erddap'
@@ -147,8 +146,6 @@ variable_names = [
 
 df = read_glider_variables_erddap_server(url_erddap,dataset_id,lat_lim,lon_lim,\
                                    variable_names,**kwargs)
-    
-variable_values = convert_glider_vectors_to_arrays(df) 
 
 #%% Cell #5: Search for glider data sets given a 
 #   latitude and longitude box and time window, choose one those data sets 
@@ -299,7 +296,7 @@ tempg, saltg, timeg, latg, long, depthg = read_glider_data_erddap_server(url_erd
                                    lat_lim,lon_lim,scatter_plot,**kwargs)
     
 tempg_gridded, timegg, depthg_gridded = \
-                    grid_glider_data(var_name_glider,dataset_id,tempg,timeg,latg,long,depthg,delta_z,contour_plot)
+                    grid_glider_data(var_name_glider,dataset_id,tempg,timeg,depthg,delta_z,contour_plot)
 
 temp_amseas, time_amseas, depth_amseas, lat_amseas, lon_amseas = \
               get_glider_transect_from_Amseas(url_amseas,var_name_model,model_name,\
