@@ -331,7 +331,7 @@ def get_transect_from_GOFS(url_model,var_name_model,model_name,time,lat,lon,cont
     #tini = time[0]
     #tend = time[-1]
 
-    oktimem = np.where(np.logical_and(tm >= tini,tm <= tend))
+    oktimem = np.where(np.logical_and(tm >= tini,tm <= tend))[0]
     
     time_model = tm[oktimem]
 
@@ -353,20 +353,20 @@ def get_transect_from_GOFS(url_model,var_name_model,model_name,time,lat,lon,cont
     tstamp_model = [mdates.date2num(ttmodel[i]) for i in np.arange(len(ttmodel))]
 
     # interpolating glider lon and lat to lat and lon on model time
-    sublonm=np.interp(tstamp_model,tstamp_glider,target_lon)
-    sublatm=np.interp(tstamp_model,tstamp_glider,target_lat)
+    sublonm = np.interp(tstamp_model,tstamp_glider,target_lon)
+    sublatm = np.interp(tstamp_model,tstamp_glider,target_lat)
 
     # getting the model grid positions for sublonm and sublatm
-    oklonm=np.round(np.interp(sublonm,lon_model,np.arange(len(lon_model)))).astype(int)
-    oklatm=np.round(np.interp(sublatm,lat_model,np.arange(len(lat_model)))).astype(int)
+    oklonm = np.round(np.interp(sublonm,lon_model,np.arange(len(lon_model)))).astype(int)
+    oklatm = np.round(np.interp(sublatm,lat_model,np.arange(len(lat_model)))).astype(int)
 
     # Getting glider transect from model
     print('Getting glider transect from '+ model_name)
-    var_model = np.empty((len(depth_model),len(oktimem[0])))
+    var_model = np.empty((len(depth_model),len(oktimem)))
     var_model[:] = np.nan
-    for i in range(len(oktimem[0])):
-        print(len(oktimem[0]),' ',i)
-        var_model[:,i] = model.variables[var_name_model][oktimem[0][i],:,oklatm[i],oklonm[i]]
+    for i in range(len(oktimem)):
+        print(len(oktimem),' ',i)
+        var_model[:,i] = model.variables[var_name_model][oktimem[i],:,oklatm[i],oklonm[i]]
 
     # Countour plot
     if contour_plot == 'yes':

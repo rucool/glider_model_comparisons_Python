@@ -137,7 +137,7 @@ lon = np.nanmean(long,axis=0)[okt]
 var_model, ttmodel, depth_model, lat_model, lon_model = \
     get_transect_from_GOFS(url_model,var_name_model,model_name,time,lat,lon,contour_plot='yes')
     
-#%% cell #5: Extract a temperature transect from GOFS 3.1 given
+#%% cell #6: Extract a temperature transect from GOFS 3.1 given
 # times, latitudes and longitudes of the transect 
                   
 from glider_transect_model_com import get_transect_from_GOFS
