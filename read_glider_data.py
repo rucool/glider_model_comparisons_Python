@@ -470,12 +470,12 @@ def read_glider_data_erddap_server(url_erddap,dataset_id,\
             ax.xaxis.set_major_formatter(xfmt)
             plt.ylim([-np.nanmax(dg),0])
 
-        else:
-            tempg = np.nan
-            saltg = np.nan
-            timeg = np.nan
-            latg = np.nan
-            long = np.nan
-            depthg = np.nan
+    else:
+        tempg = np.nan
+        saltg = np.nan
+        timeg = np.nan
+        latg = np.nan
+        long = np.nan
+        depthg = np.nan
 
     return tempg, saltg, timeg, latg, long, depthg
